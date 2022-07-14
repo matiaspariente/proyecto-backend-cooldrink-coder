@@ -9,11 +9,13 @@ const Productos = require('../controllers/apiProducts.js');
 
 const router = express.Router();
 
+const categories = ['Cerveza', 'BebidaBlanca','Whisky','Vino','Champagne','Aperitivo']
+
 const managerProductos = new Productos("Productos");
 
-router.get('/',(req,res)=>{
+router.get('/',async(req,res)=>{
     //logger.info(" Ruta /api/productos Metodo Get")
-    let content = managerProductos.leer() //llamo a la funcion leer los productos
+    let content = await managerProductos.leer() //llamo a la funcion leer los productos
     if(content.length!=0) res.send(content); //lo informo
     else{
         //loggerError.error('no hay productos cargados')
@@ -21,33 +23,43 @@ router.get('/',(req,res)=>{
     } 
 })
 
-router.get('/:id',(req,res)=>{
+router.get('/:id',async (req,res)=>{
     //logger.info(" Ruta /api/productos/:id Metodo Get")
     let {id} = req.params; //tomo el id
-    let content = managerProductos.leer() 
-    content = content.find(content=>content.id == id) // llamo a leer pero solo tomo el elememento de ese ID
-    if(content!=undefined)  res.send(content); // lo informo
-    else {
-        //loggerError.error(`producto con id ${id} no encontrado`)
-        res.send({error: 'producto no encontrado'})
-    }     
+    
+    if (categories.includes(id)) {
+        let content = await managerProductos.leerCategory(id) 
+        if(content!=undefined)  res.send(content); // lo informo
+        else {
+            //loggerError.error(`producto con id ${id} no encontrado`)
+            res.send({error: 'Categoria sin productos'})
+        }
+    }
+    else{
+        let content = await managerProductos.leerId(id) 
+        if(content!=undefined)  res.send(content); // lo informo
+        else {
+            //loggerError.error(`producto con id ${id} no encontrado`)
+            res.send({error: 'Producto No encontrado'})
+        }
+    }    
+
 })
 
-router.post('/',(req,res)=>{
+router.post('/',async(req,res)=>{
     //logger.info(" Ruta /api/productos Metodo Post")
-    let id = managerProductos.guardar(req.body.title,req.body.price,req.body.thumbnail) //llamo a la funcion guardar elemento
-    let content = managerProductos.leer()
-    res.send(content[id-1]) // lo informo
+    let id = await managerProductos.guardar(req.body.category,req.body.detail,req.body.pictureUrl,req.body.price,req.body.title) //llamo a la funcion guardar elemento
+    let content = await managerProductos.leerId(id)
+    res.send(content) // lo informo
     //io.emit('log',managerProductos.leer())// envio mensaje al servidor para que se modifique la tabla de productos
 })
 
-router.delete('/:id',(req,res)=>{
+router.delete('/:id',async(req,res)=>{
     //logger.info(" Ruta /api/productos/:id Metodo Delete")
     let {id} = req.params;
-    let content = managerProductos.leer() 
-    content = content.find(content=>content.id == id) //leo el producto con ese ID
+    let content = await managerProductos.leerId() 
     if(content!=undefined) {
-        managerProductos.borrar(id) // una vez leido llamo a la funcion borrar
+        await managerProductos.borrar(id) // una vez leido llamo a la funcion borrar
         res.send({status:'success',message:`Producto con ID:${id} borrado`})  //lo informo
     } 
     else {
@@ -57,13 +69,12 @@ router.delete('/:id',(req,res)=>{
     //io.emit('log',managerProductos.leer()) // envio mensaje al servidor para que se modifique la tabla de productos
 })
 
-router.put('/:id',(req,res)=>{
+router.put('/:id',async (req,res)=>{
     //logger.info(" Ruta /api/productos/:id Metodo Put")
     let {id} = req.params;
-    let content = managerProductos.leer()
-    content = content.find(content=>content.id == id)//leo el producto
+    let content = await managerProductos.leerId()
     if(content!=undefined) {
-        managerProductos.modificar(req.body.title,req.body.price,req.body.thumbnail,id) // llamo a la funcion modificar
+        await managerProductos.modificar(req.body.category,req.body.detail,req.body.pictureUrl,req.body.price,req.body.title,id) // llamo a la funcion modificar
         res.send({status:'success',message:`Producto con ID:${id} modificado`}) // lo informo
     } 
     else {

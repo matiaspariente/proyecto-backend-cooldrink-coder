@@ -3,6 +3,9 @@ const minimist = require('minimist')
 const cpus = require('os')
 const apiProductosRouter = require('./routes/routeProducts.js')
 const apiCartsRouter = require('./routes/routeCarts.js')
+const viewsRouter = require('./routes/routeViews.js')
+const dotenv = require('dotenv')
+const path = require('path')
 
 let args = process.argv.slice(2);
 
@@ -22,11 +25,16 @@ const PORT = argv.port
 
 const server = app.listen(PORT,()=>console.log(`listening on ${PORT}`))
 
+dotenv.config()
+
+app.set("views", path.join(__dirname, 'views'));
+app.set("view engine", "ejs");
+
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 
-//app.use(express.static(__dirname+'/public'))
-//app.use('/',viewsRouter)
+app.use(express.static(path.join(__dirname,'/public')))
+app.use('/',viewsRouter)
 //app.use('/info',infoRouter)
 app.use('/api/products/',apiProductosRouter)
 app.use('/api/carts/',apiCartsRouter)
