@@ -14,6 +14,7 @@ const mongoose = require('mongoose')
 const {usersSchema} = require('./config.js');
 const bcrypt = require('bcrypt-nodejs')
 const upload = require('./libs/storage.js')
+const transport = require('./libs/nodemailer.js')
 
 let args = process.argv.slice(2);
 
@@ -64,6 +65,25 @@ passport.use('login', new LocalStrategy(async(username, password, done)=>{
     }
 }));
 
+const mailRegistro = async (user)=>{
+    try{
+        const opts = {
+            from: "Pedidos Cool Drink",
+            to: process.env._EMAIL_PEDIDOS,
+            subject: "Nuevo registro",
+            html: `<h1>Nuevo Registro</h1>
+                 <p>Email: ${user.email}</p>
+                 <p>Nombre: ${user.name}</p>
+                 <p>Direccion: ${user.address}</p>
+                 <p>Edad: ${user.age}</p>
+                 <p>Telefono: ${user.telephone}</p>`    
+        }
+        await transport.sendMail(opts)
+    } catch (error){
+        console.log(error);
+    }
+} 
+
 
 passport.use('register', new LocalStrategy({
     passReqToCallback: true
@@ -79,7 +99,7 @@ passport.use('register', new LocalStrategy({
             address: req.body.address,
             age: parseInt(req.body.age),
             telephone: req.body.telephone,
-            cartid: 0,
+            cartId: 0,
         }
         bcrypt.genSalt(10, (err,salt) => {
             if(err) {
@@ -91,6 +111,7 @@ passport.use('register', new LocalStrategy({
                 }
                 user.password = hash;
                 await model.insertMany(user)
+                await mailRegistro(user)
                 return done(null, user);
             })
         })

@@ -1,9 +1,14 @@
 const express = require('express')
 const axios = require('axios');
 const passport = require('passport')
-
+const mongoose = require('mongoose')
+const {usersSchema} = require('../config.js');
+const transport = require('../libs/nodemailer.js')
+const client = require('../libs/twilio.js')
 
 const router = express.Router();
+
+const model = mongoose.model('users', usersSchema)
 
 let isLogin = (req, res, next)=>{
     try {
@@ -26,6 +31,22 @@ let isNotLogin = (req, res, next)=>{
         }
     } catch (error) {
         console.log(error);
+    }
+}
+
+let isCartId = async (req,res,next)=>{
+    let user= await model.find({_id:req.user.id})
+    if(user[0].cartId==0){
+        let cartID = 0
+        await axios.post(`http://${req.headers.host}/api/carts/`)
+        .then(function (response) { 
+            cartID = response.data.cartId
+        })
+        await model.updateOne({_id:req.user.id}, {$set:{cartId: cartID}})
+        next();
+    }
+    else{
+    next() 
     }
 }
 
@@ -62,7 +83,7 @@ router.get('/logout',(req,res)=>{
 })
 
 router.get('/productos',isLogin,(req,res)=>{
-    axios.get('http://localhost:8050/api/products/')
+    axios.get(`http://${req.headers.host}/api/products/`)
     .then(function (response) {
         let products = response.data
         let email = req.user.email
@@ -76,7 +97,7 @@ router.get('/productos',isLogin,(req,res)=>{
 
 router.get('/productos/categoria/:categoria',isLogin,(req,res)=>{
     let {categoria} = req.params; //tomo la categoria
-    axios.get(`http://localhost:8050/api/products/${categoria}`)
+    axios.get(`http://${req.headers.host}/api/products/${categoria}`)
     .then(function (response) {
 
         res.render('home',{products:response.data, email: req.user.email})
@@ -87,12 +108,12 @@ router.get('/productos/categoria/:categoria',isLogin,(req,res)=>{
     //logger.info(" Ruta / Metodo Get")   
 })
 
-router.get('/productos/:id',isLogin,(req,res)=>{
+router.get('/productos/:id',isLogin,isCartId,async(req,res)=>{
     let {id} = req.params; //tomo la categoria
-    axios.get(`http://localhost:8050/api/products/${id}`)
+    let user= await model.find({_id:req.user.id})
+    axios.get(`http://${req.headers.host}/api/products/${id}`)
     .then(function (response) {
-        console.log(response.data)
-        res.render('product',{product:response.data[0], email: req.user.email})
+        res.render('product',{product:response.data[0], email: req.user.email,cartId: user[0].cartId})
   })
   .catch(function (error) {
     console.log(error);
@@ -105,9 +126,90 @@ router.get('/usuario',isLogin,(req,res)=>{
     res.render('usuario',{email: req.user.email,usuario:req.user}) 
 })
 
-router.get('/carrito',isLogin,(req,res)=>{
-    //logger.info(" Ruta /registro Metodo Get") 
-    res.render('carrito',{email: req.user.email,usuario:req.user,items:req.user}) 
+router.get('/carrito',isLogin,async(req,res)=>{
+    let user= await model.find({_id:req.user.id})
+    axios.get(`http://${req.headers.host}/api/carts/${user[0].cartId}/products`)
+    .then(function (response) {
+        let total = 0
+        res.render('carrito',{email: req.user.email,usuario:req.user,items:response.data.products,total: total})
+  })
+  .catch(function (error) {
+    //console.log(error);
+    let total = 0
+    res.render('carrito',{email: req.user.email,usuario:req.user,items:[],total: total})
+  })
+    //logger.info(" Ruta /registro Metodo Get")   
+})
+
+
+const mailPedido = async (user,items)=>{
+    let tabla="<h1>Nuevo Pedido</h1><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th></thead>"
+    let total = 0
+    for (const elementCart of items){
+            tabla +=`<tr><td>${elementCart.id}</td><td>${elementCart.quantity}</td>
+            <td>$${elementCart.price}</td><td>$${elementCart.price*elementCart.quantity}</tr></td>`
+            total += elementCart.price*elementCart.quantity
+        }
+    tabla += `<tr><td>Total</td><td></td><td></td><td>$${total}</tr></td>`   
+    try{
+        const opts = {
+            from: "Pedidos Cool Drink",
+            to: process.env._EMAIL_PEDIDOS,
+            subject: `Nuevo Pedido de ${user.name} <${user.email}>`,
+            html: tabla    
+        }
+        await transport.sendMail(opts)
+    } catch (error){
+        console.log(error);
+    }
+}
+
+const waPedido = async(user)=>{
+    try{
+        await client.messages.create({
+            body: `Nuevo Pedido de ${user.name} <${user.email}>`,
+            from: process.env._TWILIO_CEL_WA,
+            to: `whatsapp:${process.env._ADMIN_CEL}`
+        })
+    } catch (error){
+        console.log(error)
+    }
+}
+
+const smsPedido = async(user)=>{
+    try{
+        await client.messages.create({
+            body: `Hola ${user.name} Hemos recibido tu orden y la estamos procesando. CoolDrink`,
+            from: process.env._TWILIO_CEL,
+            to: user.telephone
+        })
+    } catch (error){
+        console.log(error)
+    }
+}
+
+router.get('/order',isLogin,async(req,res)=>{
+    let user= await model.find({_id:req.user.id})
+    let flag = 1
+    await axios.get(`http://${req.headers.host}/api/carts/${user[0].cartId}/products`)
+    .then(function (response) {
+        flag = 1
+        let total = 0
+        mailPedido(req.user,response.data.products)
+        smsPedido(req.user)
+        waPedido(req.user)
+        res.render('order',{email: req.user.email,usuario:req.user,items:response.data.products,total: total})
+  })
+  .catch(function (error) {
+    //console.log(error);
+    flag = 0
+    let total = 0
+    res.render('order',{email: req.user.email,usuario:req.user,items:[],total: total})
+  })
+    if(flag){
+        await axios.delete(`http://${req.headers.host}/api/carts/${user[0].cartId}`)
+        await model.updateOne({_id:req.user.id}, {$set:{cartId: 0}})//logger.info(" Ruta /registro Metodo Get")
+    }     
 })
 
 router.post("/login", passport.authenticate('login', {failureRedirect:"errorlogin", successRedirect:"/productos"}));

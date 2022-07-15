@@ -20,7 +20,7 @@ const usersSchema = new mongoose.Schema({
     address: {type: String, required: true},
     age: {type: Number, required: true},
     telephone: {type: String, required: true},
-    cartid:{type: Number, required: true},
+    cartId:{type: Number, required: true},
 });
 
 const productsSchema = new mongoose.Schema({

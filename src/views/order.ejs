@@ -1,0 +1,36 @@
+<%- include('./partials/head'); %>
+<body>
+    <%- include('./partials/navbar'); %>
+    <div class="m-5">
+        <% if(items.length==0){%>
+            <h2 class="m-5">Carrito Vacio</h2>
+            <a class='btn btn-dark m-5' href="/productos/">Ir a Inicio</a>
+        <% }else{%>    
+            <h1>ORDEN FINALIZADA</h1>
+            <h2>Recibira confirmacion via email</h2>
+            <table class="table m-5">
+            <thead>
+                <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Precio Unitario</th>
+                <th scope="col">Total</th>
+                </tr>
+            </thead>
+            <% items.forEach(function(items){ %>
+                <%- include('./partials/items', {items: items}); %>
+                <% total = total + items.quantity * items.price %>
+            <% }); %>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>$<%= total %></td>
+            </tr>
+            </table>
+            <a class="btn btn-dark" href="/productos">Volver a Inicio</a>
+        <% }; %>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+</body>
+</html>

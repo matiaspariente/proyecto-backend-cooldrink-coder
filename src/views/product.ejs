@@ -8,10 +8,29 @@
             <h5 class="card-title"><%= product.title %></h5>
             <p class="card-text"><%= product.detail %></p>
             <p class="card-text">$<%= product.price %></p>
-            <a class="btn btn-dark" href="#">Agregar Al Carrito</a>
+            <button class="btn btn-dark" id="agregarBtn">Agregar Al Carrito</a>
           </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <script>
+        let agregarBtn =document.getElementById('agregarBtn');
+
+        agregarBtn.addEventListener('click',(evt)=>{ // Boton para obtener productos al azar de la api-test
+            evt.preventDefault();
+            fetch('/api/carts/<%= cartId %>/products',{
+                method:'POST',
+                body: JSON.stringify({id:"<%= product.title %>",quantity:1,price:"<%= product.price %>"}),
+                headers:{
+                    "Content-Type":"application/json"
+                }
+            })
+            Swal.fire(
+                    'Producto Agregado',
+                    '<%= product.title %> agregado al carrito',
+                    'success'
+            )
+        })        
+    </script>
 </body>
 </html>

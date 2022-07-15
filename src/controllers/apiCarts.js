@@ -18,7 +18,7 @@ class Carritos extends ContenedorArchivo {
         return id //se retorna id
     }
 
-    async guardar(cid,pid,quantity){
+    async guardar(cid,pid,quantity,price){
             let carts = await this.leerArchivo()
             let content=carts.find(carts=>carts.id == cid) // se agrega producto con pid al carrito cid
             if(content==undefined)  return {status:'error', message: 'carrito inexistente'} // si da error es por que no hay carrito
@@ -34,7 +34,8 @@ class Carritos extends ContenedorArchivo {
             } 
             content={
                 id : pid,
-                quantity: quantity, 
+                quantity: quantity,
+                price : price, 
             }
             carts[indexCart].products.push(content) // se guarda en carrito el producto correspondiente
             await this.guardarArchivo(carts);

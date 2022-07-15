@@ -31,13 +31,13 @@ router.get('/:cid/products',async (req,res)=>{
 router.post('/', async (req,res)=>{
     //logger.info(" Ruta /api/carts/ Metodo Post")  
     let id = await managerCarts.crear() //se genera carrito con metodo crear
-    res.status(200).send({status:'success',message:`carrito creado con ID: ${id}`}) // se informa
+    res.status(200).send({status:'success',message:`carrito creado con ID: ${id}`,cartId:id}) // se informa
 })
 
 router.post('/:cid/products',async (req,res)=>{
     //logger.info(" Ruta /api/carts/:cid/products Metodo Post")   
     let {cid} = req.params;
-    let content = await managerCarts.guardar(cid,req.body.id,req.body.quantity) //se suma elemento al carrito correspondiente con metodo guardar
+    let content = await managerCarts.guardar(cid,req.body.id,req.body.quantity,req.body.price) //se suma elemento al carrito correspondiente con metodo guardar
     res.status(200).send(content) // se informa
     //io.emit('logCart', await managerCarts.leerTodo()) 
     })
