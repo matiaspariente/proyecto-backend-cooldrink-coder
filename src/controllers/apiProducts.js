@@ -1,5 +1,5 @@
 const ContenedorMongo = require ('../contenedores/contenedorMongo.js');
-const productsSchema = require ('../../config.js');
+const {productsSchema} = require ('../config.js');
 
 class Productos extends ContenedorMongo{ 
     constructor() {

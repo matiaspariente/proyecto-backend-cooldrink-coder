@@ -1,11 +1,11 @@
 <%- include('./partials/head'); %>
-<body>
-    <%- include('./partials/navbar'); %>
-    <div class="row row-cols-1 row-cols-md-4 g-4 m-5">
-        <% products.forEach(function(products){ %>
-            <%- include('./partials/products', {products: products}); %>
-          <% }); %> 
-    </div>
+<body class="body">
+    <section class="logOut">
+        <h1>Hasta luego <%= usuario.username %></h1>
+        <a href="/">
+            <button>Volver a Login</button>
+        </a>
+    </section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
 </body>
 </html>

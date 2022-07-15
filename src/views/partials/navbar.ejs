@@ -1,6 +1,6 @@
 <nav class="navbar border-bottom shadow navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand text-dark" href="/">
+        <a class="navbar-brand text-dark" href="/productos">
             <img src="../../img/logo.png" alt="Cool Drink" width="80" height="80" class="align-text"> 
             Tienda de Bebidas  
         </a>
@@ -24,5 +24,16 @@
                 </li>    
             </ul>
         </div>
+        <li class="nav-item dropdown d-flex">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <%= email %>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+              <li><a class="dropdown-item" href="/carrito">Carrito</a></li>
+              <li><a class="dropdown-item" href="/usuario">Datos</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </li>
     </div>    
 </nav>

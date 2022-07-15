@@ -1,0 +1,14 @@
+<%- include('./partials/head'); %>
+<body>
+    <%- include('./partials/navbar'); %>
+    <div class="card m-5">
+        <div class="card-body">
+          <h5 class="card-title"><%= usuario.name %></h5>
+          <p class="card-text">Email: <%= usuario.email %></p>
+          <p class="card-text">Dirección: <%= usuario.address %></p>
+          <p class="card-text">Telefonó: <%= usuario.telephone %></p>
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+</body>
+</html>

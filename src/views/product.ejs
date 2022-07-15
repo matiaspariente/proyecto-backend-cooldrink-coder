@@ -1,0 +1,17 @@
+<%- include('./partials/head'); %>
+<body>
+    <%- include('./partials/navbar'); %>
+    <div class="col">
+        <div class="card m-5 shadow" style="width: 18rem;">
+          <img src="<%= product.pictureUrl %>" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title"><%= product.title %></h5>
+            <p class="card-text"><%= product.detail %></p>
+            <p class="card-text">$<%= product.price %></p>
+            <a class="btn btn-dark" href="#">Agregar Al Carrito</a>
+          </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+</body>
+</html>

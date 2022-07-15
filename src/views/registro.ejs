@@ -1,0 +1,41 @@
+<%- include('./partials/head'); %>
+<body>
+    <div class="container my-5">
+        <div>
+            <h1>Register</h1>
+            <br>
+            <form class="form" method="post" autocomplete="off" action="/registro" >
+                <div class="form-group">
+                    <input type="text" name="username" id="username" placeholder="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" id="password" placeholder="Contraseña" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="name" id="name" placeholder="Nombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="address" id="address" placeholder="Direccion" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" name="age" id="age" placeholder="Edad" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="telephone" id="telephone" placeholder="Telefonó" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <input type="file" name="photo" id="photo" placeholder="Foto" class="form-control-file" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Register" class="btn btn-success my-3">
+                </div>
+            </form>
+            <hr>
+            <div class="text-left">
+                <button class="btn btn-primary" onclick="location.href = '/login'">Go to Login</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+</body>
+</html>
