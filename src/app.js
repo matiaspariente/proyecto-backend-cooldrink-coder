@@ -15,6 +15,10 @@ const {usersSchema} = require('./config.js');
 const bcrypt = require('bcrypt-nodejs')
 const upload = require('./libs/storage.js')
 const transport = require('./libs/nodemailer.js')
+const log4js = require('./libs/log4js.js');
+
+const loggerWarning = log4js.getLogger('loggerFileWarning');
+const loggerError = log4js.getLogger('loggerFileError');
 
 let args = process.argv.slice(2);
 
@@ -34,14 +38,10 @@ const PORT = argv.port
 //const MODO = argv.modo
 //const numCPUs = cpus.cpus().length
 
-const server = app.listen(PORT,()=>console.log(`listening on ${PORT}`))
+app.listen(PORT,()=>console.log(`listening on ${PORT}`))
 
 dotenv.config()
 
-const advancedOptions = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}
 
 app.set("views", path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
@@ -80,7 +80,7 @@ const mailRegistro = async (user)=>{
         }
         await transport.sendMail(opts)
     } catch (error){
-        console.log(error);
+        loggerError.error(error);
     }
 } 
 
@@ -116,7 +116,7 @@ passport.use('register', new LocalStrategy({
             })
         })
     } catch (error) {
-        console.log(error);
+        loggerError.error(error);
     }
 }));
 
@@ -128,6 +128,11 @@ passport.deserializeUser(async(email, done)=>{
     let usuario = await model.find({email: email});
     done(null, usuario[0]);
 });
+
+const advancedOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}
 
 //app.use(upload.single('photo'))
 app.use(express.json());
@@ -152,9 +157,7 @@ app.use('/',viewsRouter)
 //app.use('/info',infoRouter)
 app.use('/api/products/',apiProductosRouter)
 app.use('/api/carts/',apiCartsRouter)
-//app.use('/api/productos-test/',apiProductosTestRouter)
-//app.use('/api/random',apiRandomRouter)
 app.use('*',(req,res)=>{
-    //logger.warn(`Ruta: ${req.originalUrl} No permitida`)
+    loggerWarning.warn(`Ruta: ${req.originalUrl} No permitida`)
     res.send("Ruta No permitida")
 })
