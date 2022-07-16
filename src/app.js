@@ -1,8 +1,8 @@
 const express = require('express')
 const minimist = require('minimist')
-const cpus = require('os')
 const apiProductosRouter = require('./routes/routeProducts.js')
 const apiCartsRouter = require('./routes/routeCarts.js')
+const infoRouter = require('./routes/routeInfo.js')
 const viewsRouter = require('./routes/routeViews.js')
 const dotenv = require('dotenv')
 const path = require('path')
@@ -13,36 +13,33 @@ const MongoStore = require('connect-mongo')
 const mongoose = require('mongoose')
 const {usersSchema} = require('./config.js');
 const bcrypt = require('bcrypt-nodejs')
-const upload = require('./libs/storage.js')
 const transport = require('./libs/nodemailer.js')
 const log4js = require('./libs/log4js.js');
 
+// ------------------------ Loggers-----------------------------------
 const loggerWarning = log4js.getLogger('loggerFileWarning');
 const loggerError = log4js.getLogger('loggerFileError');
 
-let args = process.argv.slice(2);
+// ------------------------ Schema Mongoose-----------------------------------
+const model = mongoose.model('users', usersSchema)
 
+// ------------------------ Argumentos-----------------------------------
+let args = process.argv.slice(2);
 let options = {
     default:{
         port: process.env.PORT || 8050,
-        modo:"fork"
     },
 }
-
 let argv = minimist(args,options)
+const PORT = argv.port
 
-const model = mongoose.model('users', usersSchema)
 
 const app = express()
-const PORT = argv.port
-//const MODO = argv.modo
-//const numCPUs = cpus.cpus().length
-
 app.listen(PORT,()=>console.log(`listening on ${PORT}`))
 
 dotenv.config()
 
-
+// ------------------------ EJS Config-----------------------------------
 app.set("views", path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
 
@@ -90,7 +87,6 @@ passport.use('register', new LocalStrategy({
 },async(req, username, password, done)=>{
     try {
         let usuario = await model.find({email: username});
-        //let usuario = usuarios.find(user => user.username == username);
         if(usuario.length) return done(null,false)
         const user = {
             email: username,
@@ -99,6 +95,7 @@ passport.use('register', new LocalStrategy({
             address: req.body.address,
             age: parseInt(req.body.age),
             telephone: req.body.telephone,
+            photo: req.body.photo,
             cartId: 0,
         }
         bcrypt.genSalt(10, (err,salt) => {
@@ -134,10 +131,7 @@ const advancedOptions = {
     useUnifiedTopology: true,
 }
 
-//app.use(upload.single('photo'))
-app.use(express.json());
-app.use(express.urlencoded({extended:true}))
-
+//-------Persistencia Sesion--------
 app.use(expressSession({ // se persiste SESSIONS en Mongo
     store: MongoStore.create({
         mongoUrl: process.env._MONGO_URL,
@@ -149,15 +143,19 @@ app.use(expressSession({ // se persiste SESSIONS en Mongo
     saveUninitialized:true
 })) 
 
+//-------Middlewares--------
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
 app.use(passport.initialize());
 app.use(passport.session());
-
 app.use(express.static(path.join(__dirname,'/public')))
+
+//-------Routes--------
 app.use('/',viewsRouter)
-//app.use('/info',infoRouter)
+app.use('/info',infoRouter)
 app.use('/api/products/',apiProductosRouter)
 app.use('/api/carts/',apiCartsRouter)
 app.use('*',(req,res)=>{
     loggerWarning.warn(`Ruta: ${req.originalUrl} No permitida`)
-    res.send("Ruta No permitida")
+    res.render('rutaErronea',{ruta:req.originalUrl})
 })

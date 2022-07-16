@@ -4,34 +4,34 @@
         <div>
             <h1>Register</h1>
             <br>
-            <form class="form" method="post" autocomplete="off" action="/registro" >
-                <div class="form-group">
+            <form class="form m-5" method="post" autocomplete="off" action="/registro" enctype="multipart/form-data">
+                <div class="form-group m-2">
+                    <input type="file" name="photo" id="photo" placeholder="Foto" class="form-control" required>
+                </div>
+                <div class="form-group m-2">
                     <input type="text" name="username" id="username" placeholder="email" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="password" name="password" id="password" placeholder="Contraseña" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="text" name="name" id="name" placeholder="Nombre" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="text" name="address" id="address" placeholder="Direccion" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="number" name="age" id="age" placeholder="Edad" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="text" name="telephone" id="telephone" placeholder="Telefonó" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <input type="file" name="photo" id="photo" placeholder="Foto" class="form-control-file" required>
-                </div>
-                <div class="form-group">
+                <div class="form-group m-2">
                     <input type="submit" value="Register" class="btn btn-success my-3">
                 </div>
             </form>
             <hr>
-            <div class="text-left">
+            <div class="text-left m-5">
                 <button class="btn btn-primary" onclick="location.href = '/login'">Go to Login</button>
             </div>
         </div>

@@ -1,14 +1,9 @@
 const multer = require('multer')
+const path = require('path')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("destination")
-        cb(null, '../public/img/users')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = 'BOOOOCA'
-      console.log("filename")
-      cb(null, file.fieldname + '-' + uniqueSuffix)
+        cb(null, 'src/public/img/users')
     }
   })
   

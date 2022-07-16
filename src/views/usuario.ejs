@@ -1,7 +1,8 @@
 <%- include('./partials/head'); %>
 <body>
     <%- include('./partials/navbar'); %>
-    <div class="card m-5">
+    <div class="card m-5" style="width: 20rem;">
+      <img src="../../<%= usuario.photo.split('public')[1] %>" class="card-img-top" alt="<%= usuario.email %> foto">
         <div class="card-body">
           <h5 class="card-title"><%= usuario.name %></h5>
           <p class="card-text">Email: <%= usuario.email %></p>

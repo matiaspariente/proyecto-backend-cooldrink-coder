@@ -5,7 +5,10 @@ const mongoose = require('mongoose')
 const {usersSchema} = require('../config.js');
 const transport = require('../libs/nodemailer.js')
 const client = require('../libs/twilio.js')
-const log4js = require('../libs/log4js.js');
+const log4js = require('../libs/log4js.js')
+const upload = require('../libs/storage.js')
+const fs = require('fs')
+
 
 const logger = log4js.getLogger();
 const loggerError = log4js.getLogger('loggerFileError');
@@ -211,13 +214,16 @@ router.get('/order',isLogin,async(req,res)=>{
   })
     if(flag){
         await axios.delete(`http://${req.headers.host}/api/carts/${user[0].cartId}`)
-        await model.updateOne({_id:req.user.id}, {$set:{cartId: 0}})//logger.info(" Ruta /registro Metodo Get")
+        await model.updateOne({_id:req.user.id}, {$set:{cartId: 0}})
     }     
 })
 
 router.post("/login", passport.authenticate('login', {failureRedirect:"errorlogin", successRedirect:"/productos"}));
 
-router.post("/registro", passport.authenticate('register', {failureRedirect:"errorregister", successRedirect:"/productos"}));
-
+router.post("/registro",upload.single('photo'),(req,res,next)=>{
+    req.body.photo = req.file.path + '.' + req.file.mimetype.split('/')[1]
+    fs.renameSync(req.file.path,req.body.photo)
+    next()
+}, passport.authenticate('register', {failureRedirect:"errorregister", successRedirect:"/productos"}));
 
 module.exports = router
