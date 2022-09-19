@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-class ContenedorMongo{ // contenedor Archivos
+class ContenedorMongo{ // contenedor 
     constructor(schema,collection){
         this.schema = schema;
         this.collection = collection;
@@ -29,9 +29,9 @@ class ContenedorMongo{ // contenedor Archivos
         }
     }
 
-    async  leerMongoCategory(category){
+    async  leerMongoCustom(value,key){
         try{    
-            let content = await this.model.find({category:category});
+            let content = await this.model.find({[key]:value});
             if (!content) return [];
             return content;
         }
@@ -67,7 +67,14 @@ class ContenedorMongo{ // contenedor Archivos
         }
     }
 
-
+    async borrarMongoCustom(value,key){
+        try {
+            let response = await this.model.deleteMany({[key]: value});
+            return response;
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
 module.exports = ContenedorMongo

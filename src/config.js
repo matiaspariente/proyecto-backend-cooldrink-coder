@@ -32,4 +32,29 @@ const productsSchema = new mongoose.Schema({
     title: {type: String, required: true},
 });
 
-module.exports = {productsSchema,usersSchema}
+const cartsSchema = new mongoose.Schema({
+    cartId: {type: String, required: true},
+    date: {type: Date , required: true},
+    products: {type: Array, required: true},
+});
+
+const ordersSchema = new mongoose.Schema({
+    products: {type: Array, required: true},
+    order: {type: Number, required: true},
+    date: {type: Date , required: true},
+    state: {type: String, required: true},
+    email: {type: String, required: true},
+});
+
+const noOrderSchema = new mongoose.Schema({
+    order: {type:Number, required:true}
+})
+
+const messageSchema = new mongoose.Schema({
+    message: {type: String, required: true},
+    date: {type: String , required: true},
+    type: {type: String, required: true},
+    email: {type: String, required: true},
+});
+
+module.exports = {productsSchema,usersSchema,cartsSchema,ordersSchema,noOrderSchema,messageSchema}

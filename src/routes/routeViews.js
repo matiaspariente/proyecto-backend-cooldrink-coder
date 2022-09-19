@@ -2,7 +2,7 @@ const express = require('express')
 const axios = require('axios');
 const passport = require('passport')
 const mongoose = require('mongoose')
-const {usersSchema} = require('../config.js');
+const {usersSchema, ordersSchema, noOrderSchema} = require('../config.js');
 const transport = require('../libs/nodemailer.js')
 const client = require('../libs/twilio.js')
 const log4js = require('../libs/log4js.js')
@@ -16,6 +16,9 @@ const loggerError = log4js.getLogger('loggerFileError');
 const router = express.Router();
 
 const model = mongoose.model('users', usersSchema)
+const modelOrder = mongoose.model('orders', ordersSchema)
+const modelNoOrder = mongoose.model('noorders', noOrderSchema)
+const idNoOrder = '63278212c6847f63e502a069'
 
 let isLogin = (req, res, next)=>{
     try {
@@ -133,6 +136,30 @@ router.get('/usuario',isLogin,(req,res)=>{
     res.render('usuario',{email: req.user.email,usuario:req.user}) 
 })
 
+router.get('/chat',isLogin,(req,res)=>{
+    axios.get(`http://${req.headers.host}/api/messages/`)
+    .then(function (response) {
+        let messages = response.data
+        let email = req.user.email
+        res.render('chat',{email,messages})
+  })
+  .catch(function (error) {
+    loggerError.error(error);
+  })  
+})
+
+router.get('/chat/:email',isLogin,(req,res)=>{
+    let {email} = req.params;
+    axios.get(`http://${req.headers.host}/api/messages/${email}`)
+    .then(function (response) {
+        let messages = response.data
+        res.render('chatemail',{email,messages})
+  })
+  .catch(function (error) {
+    loggerError.error(error);
+  })  
+})
+
 router.get('/carrito',isLogin,async(req,res)=>{
     logger.info(` Ruta /carrito Metodo Get`)
     let user= await model.find({_id:req.user.id})
@@ -148,7 +175,7 @@ router.get('/carrito',isLogin,async(req,res)=>{
 })
 
 
-const mailPedido = async (user,items)=>{
+const mailPedido = async (user,items,order)=>{
     let tabla="<h1>Nuevo Pedido</h1><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th></thead>"
     let total = 0
     for (const elementCart of items){
@@ -161,7 +188,7 @@ const mailPedido = async (user,items)=>{
         const opts = {
             from: "Pedidos Cool Drink",
             to: process.env._EMAIL_PEDIDOS,
-            subject: `Nuevo Pedido de ${user.name} <${user.email}>`,
+            subject: `Nuevo Pedido ${order} de ${user.name} <${user.email}>`,
             html: tabla    
         }
         await transport.sendMail(opts)
@@ -170,10 +197,10 @@ const mailPedido = async (user,items)=>{
     }
 }
 
-const waPedido = async(user)=>{
+const waPedido = async(user,order)=>{
     try{
         await client.messages.create({
-            body: `Nuevo Pedido de ${user.name} <${user.email}>`,
+            body: `Nuevo Pedido ${order} de ${user.name} <${user.email}>`,
             from: process.env._TWILIO_CEL_WA,
             to: `whatsapp:${process.env._ADMIN_CEL}`
         })
@@ -182,10 +209,10 @@ const waPedido = async(user)=>{
     }
 }
 
-const smsPedido = async(user)=>{
+const smsPedido = async(user,order)=>{
     try{
         await client.messages.create({
-            body: `Hola ${user.name} Hemos recibido tu orden y la estamos procesando. CoolDrink`,
+            body: `Hola ${user.name} Hemos recibido tu orden numero ${order} y la estamos procesando. CoolDrink`,
             from: process.env._TWILIO_CEL,
             to: user.telephone
         })
@@ -197,15 +224,25 @@ const smsPedido = async(user)=>{
 router.get('/order',isLogin,async(req,res)=>{
     logger.info(` Ruta /order Metodo Get`)
     let user= await model.find({_id:req.user.id})
+    await modelNoOrder.updateOne({_id:idNoOrder}, {$inc:{order:1}})
+    const orderNo = await modelNoOrder.find({_id:idNoOrder})
     let flag = 1
     await axios.get(`http://${req.headers.host}/api/carts/${user[0].cartId}/products`)
     .then(function (response) {
         flag = 1
         let total = 0
-        mailPedido(req.user,response.data.products)
-        smsPedido(req.user)
-        waPedido(req.user)
-        res.render('order',{email: req.user.email,usuario:req.user,items:response.data.products,total: total})
+        const order = {
+            products: response.data.products,
+            order: orderNo[0].order,
+            date: new Date(),
+            state: 'generada',
+            email: req.user.email,
+        }
+        modelOrder.insertMany(order)
+        mailPedido(req.user,response.data.products,orderNo[0].order)
+        smsPedido(req.user,orderNo[0].order)
+        waPedido(req.user,orderNo[0].order)
+        res.render('order',{email: req.user.email,usuario:req.user,items:response.data.products,total: total,order: order.order})
   })
   .catch(function (error) {
     flag = 0

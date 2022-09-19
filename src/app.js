@@ -2,6 +2,7 @@ const express = require('express')
 const minimist = require('minimist')
 const apiProductosRouter = require('./routes/routeProducts.js')
 const apiCartsRouter = require('./routes/routeCarts.js')
+const apiMessagesRouter = require('./routes/routeMessages.js')
 const infoRouter = require('./routes/routeInfo.js')
 const viewsRouter = require('./routes/routeViews.js')
 const dotenv = require('dotenv')
@@ -15,6 +16,8 @@ const {usersSchema} = require('./config.js');
 const bcrypt = require('bcrypt-nodejs')
 const transport = require('./libs/nodemailer.js')
 const log4js = require('./libs/log4js.js');
+const {Server} = require('socket.io')
+const { isKeyObject } = require('util/types')
 
 // ------------------------ Loggers-----------------------------------
 const loggerWarning = log4js.getLogger('loggerFileWarning');
@@ -35,13 +38,17 @@ const PORT = argv.port
 
 
 const app = express()
-app.listen(PORT,()=>console.log(`listening on ${PORT}`))
+server = app.listen(PORT,()=>console.log(`listening on ${PORT}`))
 
 dotenv.config()
 
 // ------------------------ EJS Config-----------------------------------
 app.set("views", path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
+
+// ------------------------WEB SOCKET-----------------------------------
+
+const io = new Server(server);
 
 // ------------------------ PASSPORT-----------------------------------
 
@@ -143,6 +150,7 @@ app.use(expressSession({ // se persiste SESSIONS en Mongo
     saveUninitialized:true
 })) 
 
+
 //-------Middlewares--------
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -155,7 +163,20 @@ app.use('/',viewsRouter)
 app.use('/info',infoRouter)
 app.use('/api/products/',apiProductosRouter)
 app.use('/api/carts/',apiCartsRouter)
+app.use('/api/messages/',apiMessagesRouter)
 app.use('*',(req,res)=>{
     loggerWarning.warn(`Ruta: ${req.originalUrl} No permitida`)
     res.render('rutaErronea',{ruta:req.originalUrl})
 })
+
+io.on('connection', socket =>{
+    console.log('cliente conectado')
+    socket.on('mensaje', data=>{
+        console.log("recibo Mensaje Cliente")
+        io.sockets.emit('chat',data)
+    });
+})
+
+
+
+module.exports = io;

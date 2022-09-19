@@ -1,0 +1,71 @@
+<%- include('./partials/head'); %>
+<body>
+    <%- include('./partials/navbar'); %>
+    <div class="container my-5">
+        <div>
+            <h1>Chat</h1>
+            <br>
+            <div id="inputText">
+                <input type="text" id="chatBox">
+                <button class="btn btn-primary" id="chatBtn">Enviar</button>
+            </div>
+            <hr>
+            <div id="chat"></div>
+        </div>
+        <div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        let chatBox =document.getElementById('chatBox');
+        let chatBtn =document.getElementById('chatBtn');
+        let chat =document.getElementById('chat');
+
+        let socket = io();
+
+        fetch('/api/messages/', {method:"GET"}) // se hace un fetch para atraves del metodo get obtener los productos cargados hasta el momento al iniciar la conexion con el cliente nuevo
+            .then(response => response.text())
+            .then(data => {
+            socket.emit('mensaje',JSON.parse(data))
+        })
+
+        chatBtn.addEventListener('click',(evt)=>{ 
+            evt.preventDefault();
+            if(chatBox.value.trim().length>0){//Por lo menos se envia un simbolo
+                fetch('/api/messages',{
+                    method:'POST',
+                    body: JSON.stringify({message: chatBox.value.trim()}),
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                }).then(()=>{
+                    fetch('/api/messages/', {method:"GET"}) // se hace un fetch para atraves del metodo get obtener los productos cargados hasta el momento al iniciar la conexion con el cliente nuevo
+                        .then(response => response.text())
+                        .then(data => {
+                        socket.emit('mensaje',JSON.parse(data))
+                        })
+                    })  
+                chatBox.value="";
+            }
+        })
+
+        socket.on('chat',data=>{ // recibo del servidor el array del chat y lo muestro en pantalla
+            let messages="<ol class='list-group'>";   
+            data.reverse().forEach(log=>{
+            messages = messages +   `<li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto">
+                                           <div class="fw-bold">${log.email}</div>
+                                            ${log.message}
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">${log.date}</span>
+                                    </li>`
+            })
+            messages = messages + "</ol>"
+            chat.innerHTML=messages;
+        })
+    
+    </script>    
+    
+</body>
+</html>

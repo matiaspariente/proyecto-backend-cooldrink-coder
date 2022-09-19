@@ -1,34 +1,36 @@
-const ContenedorArchivo = require('../contenedores/contenedorArchivo.js');
+const ContenedorMongo = require('../contenedores/contenedorMongo.js');
+const {cartsSchema} = require ('../config.js');
 
-class Carritos extends ContenedorArchivo { 
+class Carritos extends ContenedorMongo { 
     constructor() {
-        super('/../data/carts.txt'); // se carga la informacion de carritos desde filesystem
+        super(cartsSchema,'carts');; // se carga la informacion de carritos desde filesystem
     }
 
     async crear(){
-        let id = 0;
-        let carts = await this.leerArchivo()
-        if(carts.length) id=carts[carts.length-1].id; // Se asigna id 1 si no hay carritos
+        let cartId = 0;
+        let carts = await this.leerMongo()
+        if(carts.length) cartId=carts[carts.length-1].cartId; // Se asigna id 1 si no hay carritos
         const cartActual = { //se toma los valores ingresados
-            id:++id,
+            cartId:++cartId,
+            date: new Date(),
             products: [],
         }
-        carts.push(cartActual);// se agregan a carritos
-        await this.guardarArchivo(carts)
-        return id //se retorna id
+        await this.agregarMongo(cartActual)
+        return cartId //se retorna id
     }
 
     async guardar(cid,pid,quantity,price){
-            let carts = await this.leerArchivo()
-            let content=carts.find(carts=>carts.id == cid) // se agrega producto con pid al carrito cid
-            if(content==undefined)  return {status:'error', message: 'carrito inexistente'} // si da error es por que no hay carrito
-            let indexCart = carts.findIndex(carts=>carts.id == cid)
-            content= carts[indexCart].products
+            let carts = await this.leerMongoCustom(cid,'cartId')
+            //let content=carts.find(carts=>carts.cartId == cid) // se agrega producto con pid al carrito cid
+            let cart = carts[0]
+            if(cart==undefined)  return {status:'error', message: 'carrito inexistente'} // si da error es por que no hay carrito
+            //let indexCart = carts.findIndex(carts=>carts.id == cid)
+            let content = cart.products
             if(content.length!=0){
                 let indexProduct = content.findIndex(content=>content.id == pid)
                 if(indexProduct!=-1){
-                    carts[indexCart].products[indexProduct].quantity+=quantity // si ya existia el producto en el carrito se suma cantidad
-                    await this.guardarArchivo(carts);
+                    cart.products[indexProduct].quantity+=quantity // si ya existia el producto en el carrito se suma cantidad
+                    await this.modificarMongo(cart,cart.id);
                     return {status:'success', message: `se agrego producto con ID:${pid} en carrito con ID:${cid}`}
                 }
             } 
@@ -37,33 +39,30 @@ class Carritos extends ContenedorArchivo {
                 quantity: quantity,
                 price : price, 
             }
-            carts[indexCart].products.push(content) // se guarda en carrito el producto correspondiente
-            await this.guardarArchivo(carts);
+            cart.products.push(content) // se guarda en carrito el producto correspondiente
+            await this.modificarMongo(cart,cart.id);
             return {status:'success', message:`se agrego producto con ID:${pid} en carrito con ID:${cid}`}  
     }
 
     async leer(id) {
-        let carts = await this.leerArchivo()
-        return carts.find(carts=>carts.id == id) // se retorna Json del carrito pedido
+        let content = await this.leerMongoCustom(id,'cartId')
+        return content[0] // se retorna Json del carrito pedido
     }
 
     async leerTodo (){
-        let carts = await this.leerArchivo()
-        return carts //se retorna Json del carrito
+        let content = await this.leerMongo()
+        return content //se retorna Json del carrito
     }
 
     async borrar(id){
-        let carts = await this.leerArchivo()
-        carts = carts.filter((carts)=>carts.id != id) // se elimina el producto con el id recibido
-        await this.guardarArchivo(carts);
+        await this.borrarMongoCustom(id,'cartId')
     }
 
     async borrarProducto(cid,pid){
-        let carts = await this.leerArchivo()
-        let indexCart = carts.findIndex(carts=>carts.id == cid) // se busca por cid
-        let content = carts[indexCart].products.findIndex(products=>products.id == pid) // luego por pid y se borra si existe
-        carts[indexCart].products= carts[indexCart].products.filter(products=>products.id != pid)
-        await this.guardarArchivo(carts);
+        let cart = await this.leerMongoCustom(cid,'cartId')
+        let content = cart.products.findIndex(products=>products.id == pid) 
+        cart.products= cart.products.filter(products=>products.id != pid)
+        await this.modificarMongo(cart,cart.id);
         return content
     }
 }

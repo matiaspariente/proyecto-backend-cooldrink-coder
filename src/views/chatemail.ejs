@@ -1,0 +1,23 @@
+<%- include('./partials/head'); %>
+<body>
+    <%- include('./partials/navbar'); %>
+    <div class="container my-5">
+    <% if(messages.length==0){%>
+            <h2 class="m-5">MAIL SIN MENSAJES EN CHAT</h2>
+            <a class='btn btn-dark m-5' href="/productos/">Ir a Inicio</a>
+    <% }else{%>    
+                <div>
+                    <h1>MENSAJES DE CHAT DE <%=email%> </h1>
+                    <br>
+                    <div id="chat">
+                        <ol class='list-group'>
+                            <%messages.reverse().forEach(function(log){%>
+                                <%- include('./partials/message', {log: log}); %>
+                            <%}) %>
+                        </ol>
+                    </div>
+                </div>
+    <% }%>   
+    </div>  
+</body>
+</html>

@@ -16,7 +16,7 @@
     <script>
         let agregarBtn =document.getElementById('agregarBtn');
 
-        agregarBtn.addEventListener('click',(evt)=>{ // Boton para obtener productos al azar de la api-test
+        agregarBtn.addEventListener('click',(evt)=>{ 
             evt.preventDefault();
             fetch('/api/carts/<%= cartId %>/products',{
                 method:'POST',
