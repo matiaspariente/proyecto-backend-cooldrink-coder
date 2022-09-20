@@ -46,9 +46,6 @@ dotenv.config()
 app.set("views", path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
 
-// ------------------------WEB SOCKET-----------------------------------
-
-const io = new Server(server);
 
 // ------------------------ PASSPORT-----------------------------------
 
@@ -146,7 +143,7 @@ app.use(expressSession({ // se persiste SESSIONS en Mongo
     }),
     secret: process.env._SESSION_SECRET,
     resave: true,
-    cookie: { maxAge: 1000 *60 * 10 },
+    cookie: { maxAge: 1000 *60 * process.env._SESSION_TIME_MIN },
     saveUninitialized:true
 })) 
 
@@ -169,14 +166,14 @@ app.use('*',(req,res)=>{
     res.render('rutaErronea',{ruta:req.originalUrl})
 })
 
+
+// ------------------------WEB SOCKET-----------------------------------
+
+const io = new Server(server);
+
 io.on('connection', socket =>{
-    console.log('cliente conectado')
     socket.on('mensaje', data=>{
-        console.log("recibo Mensaje Cliente")
         io.sockets.emit('chat',data)
     });
 })
 
-
-
-module.exports = io;

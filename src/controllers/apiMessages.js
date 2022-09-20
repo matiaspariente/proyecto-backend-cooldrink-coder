@@ -3,7 +3,7 @@ const {messageSchema} = require ('../config.js');
 
 class Mensajes extends ContenedorMongo{ 
     constructor() {
-        super(messageSchema,'messages');
+        super(messageSchema,'messages'); // se carga la informacion de mensajes desde Mongo
     }
     async guardar (email,type,message,date){
             const mensajeActual = { //tomo los valores ingresados
@@ -13,7 +13,7 @@ class Mensajes extends ContenedorMongo{
                 date : date,
             }   
             let id = await this.agregarMongo(mensajeActual);// los agrego a mensajes
-            return id //retorno id
+            return id 
     }
 
     async leer (){

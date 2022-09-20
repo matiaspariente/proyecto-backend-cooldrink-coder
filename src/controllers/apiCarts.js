@@ -3,28 +3,26 @@ const {cartsSchema} = require ('../config.js');
 
 class Carritos extends ContenedorMongo { 
     constructor() {
-        super(cartsSchema,'carts');; // se carga la informacion de carritos desde filesystem
+        super(cartsSchema,'carts'); // se carga la informacion de carritos desde Mongo
     }
 
     async crear(){
         let cartId = 0;
         let carts = await this.leerMongo()
-        if(carts.length) cartId=carts[carts.length-1].cartId; // Se asigna id 1 si no hay carritos
-        const cartActual = { //se toma los valores ingresados
+        if(carts.length) cartId=carts[carts.length-1].cartId; 
+        const cartActual = { 
             cartId:++cartId,
             date: new Date(),
             products: [],
         }
         await this.agregarMongo(cartActual)
-        return cartId //se retorna id
+        return cartId 
     }
 
     async guardar(cid,pid,quantity,price){
             let carts = await this.leerMongoCustom(cid,'cartId')
-            //let content=carts.find(carts=>carts.cartId == cid) // se agrega producto con pid al carrito cid
             let cart = carts[0]
-            if(cart==undefined)  return {status:'error', message: 'carrito inexistente'} // si da error es por que no hay carrito
-            //let indexCart = carts.findIndex(carts=>carts.id == cid)
+            if(cart==undefined)  return {status:'error', message: 'carrito inexistente'} 
             let content = cart.products
             if(content.length!=0){
                 let indexProduct = content.findIndex(content=>content.id == pid)

@@ -24,7 +24,7 @@
 
         let socket = io();
 
-        fetch('/api/messages/', {method:"GET"}) // se hace un fetch para atraves del metodo get obtener los productos cargados hasta el momento al iniciar la conexion con el cliente nuevo
+        fetch('/api/messages/', {method:"GET"}) 
             .then(response => response.text())
             .then(data => {
             socket.emit('mensaje',JSON.parse(data))
@@ -40,7 +40,7 @@
                         "Content-Type":"application/json"
                     }
                 }).then(()=>{
-                    fetch('/api/messages/', {method:"GET"}) // se hace un fetch para atraves del metodo get obtener los productos cargados hasta el momento al iniciar la conexion con el cliente nuevo
+                    fetch('/api/messages/', {method:"GET"}) 
                         .then(response => response.text())
                         .then(data => {
                         socket.emit('mensaje',JSON.parse(data))
@@ -50,7 +50,7 @@
             }
         })
 
-        socket.on('chat',data=>{ // recibo del servidor el array del chat y lo muestro en pantalla
+        socket.on('chat',data=>{ 
             let messages="<ol class='list-group'>";   
             data.reverse().forEach(log=>{
             messages = messages +   `<li class="list-group-item d-flex justify-content-between align-items-start">

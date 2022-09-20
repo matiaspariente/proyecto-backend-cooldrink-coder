@@ -3,7 +3,7 @@ const {productsSchema} = require ('../config.js');
 
 class Productos extends ContenedorMongo{ 
     constructor() {
-        super(productsSchema,'products');
+        super(productsSchema,'products'); // se carga la informacion de productos desde Mongo
     }
     async guardar (category,detail,pictureUrl,price,title){
             const productoActual = { //tomo los valores ingresados
